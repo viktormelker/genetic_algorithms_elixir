@@ -10,6 +10,18 @@ selection = fn population ->
   |> Enum.map(&List.to_tuple(&1))
 end
 
+mutation =
+  fn population ->
+    population
+    |> Enum.map(fn chromosome ->
+      if :rand.uniform() < 0.05 do
+        Enum.shuffle(chromosome)
+      else
+        chromosome
+      end
+    end)
+  end
+
 crossover = fn population ->
   Enum.reduce(population, [], fn {p1, p2}, acc ->
     cx_point = :rand.uniform(1000)
@@ -33,6 +45,7 @@ algorithm =
       |> evaluate.()
       |> selection.()
       |> crossover.()
+      |> mutation.()
       |> algorithm.(algorithm)
     end
   end
