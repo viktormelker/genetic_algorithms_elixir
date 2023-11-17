@@ -6,7 +6,7 @@ defmodule Genetic do
     for _ <- 1..population_size, do: genotype.()
   end
 
-  def evaluate(population, fitness_function, opts \\ []) do
+  def evaluate(population, fitness_function, _opts \\ []) do
     population
     |> Enum.map(fn chromosome ->
       fitness = fitness_function.(chromosome)
@@ -17,12 +17,31 @@ defmodule Genetic do
   end
 
   def select(population, opts \\ []) do
-    population
-    |> Enum.chunk_every(2)
-    |> Enum.map(&List.to_tuple(&1))
+    select_fn =
+      Keyword.get(opts, :selection_type, &Toolbox.Selection.elite/2)
+
+    select_rate = Keyword.get(opts, :selection_rate, 0.8)
+    n = round(length(population) * select_rate)
+    n = if rem(n, 2) == 0, do: n, else: n + 1
+
+    parents =
+      select_fn
+      |> apply([population, n])
+
+    leftover =
+      population
+      |> MapSet.new()
+      |> MapSet.difference(MapSet.new(parents))
+
+    parents =
+      parents
+      |> Enum.chunk_every(2)
+      |> Enum.map(&List.to_tuple(&1))
+
+    {parents, MapSet.to_list(leftover)}
   end
 
-  def crossover(population, opts \\ []) do
+  def crossover(population, _opts \\ []) do
     population
     |> Enum.reduce(
       [],
@@ -35,7 +54,7 @@ defmodule Genetic do
     )
   end
 
-  def mutation(population, opts \\ []) do
+  def mutation(population, _opts \\ []) do
     population
     |> Enum.map(fn chromosome ->
       if :rand.uniform() < 0.05 do
@@ -63,9 +82,10 @@ defmodule Genetic do
     if(problem.terminate?(population, generation, temperature)) do
       best
     else
-      population
-      |> select(opts)
-      |> crossover(opts)
+      {parents, leftover} = select(population, opts)
+      children = crossover(parents, opts)
+
+      (children ++ leftover)
       |> mutation(opts)
       |> evolve(problem, generation + 1, best.fitness, temperature, opts)
     end

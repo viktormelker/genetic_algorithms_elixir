@@ -14,7 +14,7 @@ defmodule OneMax do
   end
 
   @impl true
-  def terminate?(population, generation, temperature), do: generation == 100
+  def terminate?(_population, generation, _temperature), do: generation == 100
 end
 
 solution = Genetic.run(OneMax)
