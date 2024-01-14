@@ -32,7 +32,7 @@ defmodule Cargo do
   end
 
   @impl true
-  def terminate?(population, generation, temperature), do: generation == 1000
+  def terminate?(population, generation), do: generation == 1000
 end
 
 solution = Genetic.run(Cargo, population_size: 50)

@@ -31,7 +31,7 @@ defmodule Schedule do
   end
 
   @impl true
-  def terminate?(_population, generation, _temperature), do: generation == 1000
+  def terminate?(_population, generation), do: generation == 1000
 
   defp credit_hours, do: [3.0, 3.0, 3.0, 4.5, 3.0, 3.0, 3.0, 3.0, 4.5, 1.5]
   defp difficulties, do: [8.0, 9.0, 4.0, 3.0, 5.0, 2.0, 4.0, 2.0, 6.0, 1.0]
@@ -41,8 +41,10 @@ end
 
 solution =
   Genetic.run(Schedule,
-    crossover_type: &Toolbox.Crossover.order_one_crossover/2
+    reinsertion_strategy: &Toolbox.Reinsertion.elitist(&1, &2, &3, 0.1),
+    selection_rate: 0.8,
+    mutation_rate: 0.1
   )
 
 IO.puts("Found solution")
-IO.inspect(solution.genes)
+IO.inspect(solution)

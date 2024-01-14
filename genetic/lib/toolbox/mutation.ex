@@ -25,7 +25,7 @@ defmodule Toolbox.Mutation do
 
   def scramble(chromosome) do
     genes =
-      chromosome
+      chromosome.genes
       |> Enum.shuffle()
 
     %Chromosome{chromosome | genes: genes}

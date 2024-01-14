@@ -20,7 +20,7 @@ defmodule Portfolio do
   end
 
   @impl true
-  def terminate?(population, _generation, _temperature) do
+  def terminate?(population, _generation) do
     max_value = Enum.max_by(population, &Portfolio.fitness_function/1).fitness
     max_value > @target_fitness
   end

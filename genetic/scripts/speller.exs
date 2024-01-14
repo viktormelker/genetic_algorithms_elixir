@@ -7,6 +7,7 @@ defmodule Speller do
     genes =
       Stream.repeatedly(fn -> Enum.random(?a..?z) end)
       |> Enum.take(34)
+
     %Chromosome{genes: genes, size: 34}
   end
 
@@ -21,9 +22,7 @@ defmodule Speller do
   def terminate?([best | _]) do
     best.fitness == 1
   end
-
 end
-
 
 solution = Genetic.run(Speller)
 IO.puts("Found solution")

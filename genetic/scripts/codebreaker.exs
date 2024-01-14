@@ -26,7 +26,7 @@ defmodule Codebreaker do
   end
 
   @impl true
-  def terminate?(population, _generation, _temperature) do
+  def terminate?(population, _generation) do
     Enum.max_by(population, &Codebreaker.fitness_function/1).fitness == 1
   end
 end

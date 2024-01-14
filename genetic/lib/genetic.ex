@@ -55,17 +55,18 @@ defmodule Genetic do
   end
 
   def mutation(population, opts \\ []) do
-    mutate_fn = Keyword.get(opts, :mutation_type, &Toolbox.Mutation.flip/1)
+    mutate_fn = Keyword.get(opts, :mutation_type, &Toolbox.Mutation.scramble/1)
     rate = Keyword.get(opts, :mutation_rate, 0.05)
+    n = floor(length(population) * rate)
 
     population
-    |> Enum.map(fn chromosome ->
-      if :rand.uniform() < rate do
-        apply(mutate_fn, [chromosome])
-      else
-        chromosome
-      end
-    end)
+    |> Enum.take_random(n)
+    |> Enum.map(&apply(mutate_fn, [&1]))
+  end
+
+  def reinsertion(parents, offspring, leftover, opts \\ []) do
+    strategy = Keyword.get(opts, :reinsertion_type, &Toolbox.Reinsertion.pure/3)
+    apply(strategy, [parents, offspring, leftover])
   end
 
   def run(problem, opts \\ []) do
@@ -73,24 +74,29 @@ defmodule Genetic do
     first_generation = 0
 
     population
-    |> evolve(problem, first_generation, 0, 0, opts)
+    |> evolve(problem, first_generation, opts)
   end
 
-  def evolve(population, problem, generation, last_max_fitness, temperature, opts \\ []) do
+  def evolve(population, problem, generation, opts \\ []) do
     population = evaluate(population, &problem.fitness_function/1, opts)
     best = hd(population)
-    temperature = 0.9 * (temperature + (best.fitness - last_max_fitness))
-    IO.puts("Current best: #{best.fitness}")
 
-    if(problem.terminate?(population, generation, temperature)) do
+    fit_str =
+      best.fitness
+      |> :erlang.float_to_binary(decimals: 4)
+
+    IO.puts("Current best: #{fit_str}|t generation: #{generation}")
+
+    if(problem.terminate?(population, generation)) do
       best
     else
       {parents, leftover} = select(population, opts)
       children = crossover(parents, opts)
+      mutants = mutation(population, opts)
+      offspring = children ++ mutants
+      new_population = reinsertion(parents, offspring, leftover, opts)
 
-      (children ++ leftover)
-      |> mutation(opts)
-      |> evolve(problem, generation + 1, best.fitness, temperature, opts)
+      evolve(new_population, problem, generation + 1, opts)
     end
   end
 end

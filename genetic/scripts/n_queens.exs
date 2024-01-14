@@ -36,7 +36,7 @@ defmodule NQueens do
   end
 
   @impl true
-  def terminate?(population, _generation, _temperature) do
+  def terminate?(population, _generation) do
     Enum.max_by(population, & &1.fitness).fitness == 8
   end
 end
