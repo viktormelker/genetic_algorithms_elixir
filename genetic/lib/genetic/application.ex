@@ -5,7 +5,8 @@ defmodule Genetic.Application do
     import Supervisor.Spec, warn: false
 
     children = [
-      {Utilities.Statistics, []}
+      {Utilities.Statistics, []},
+      {Utilities.Genealogy, []}
     ]
 
     opts = [strategy: :one_for_one, name: Genetic.Supervisor]

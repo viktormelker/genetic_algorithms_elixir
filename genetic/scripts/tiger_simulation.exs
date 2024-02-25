@@ -62,3 +62,6 @@ IO.inspect(solution)
 dbg(zero_gen_stats)
 dbg(fivehundred_gen_stats)
 dbg(onethousand_gen_stats)
+
+genealogy = Utilities.Genealogy.get_tree()
+dbg(Graph.vertices(genealogy))
