@@ -48,20 +48,27 @@ solution =
   Genetic.run(TigerSimulation,
     population_size: 20,
     selection_rate: 0.9,
-    mutation_rate: 0.1,
-    statistics: %{average_tiger: &TigerSimulation.average_tiger/1}
+    mutation_rate: 0.1
   )
 
 IO.puts("Found solution")
 IO.inspect(solution)
 
-{_, zero_gen_stats} = Utilities.Statistics.lookup(0)
-{_, fivehundred_gen_stats} = Utilities.Statistics.lookup(500)
-{_, onethousand_gen_stats} = Utilities.Statistics.lookup(1000)
-
-dbg(zero_gen_stats)
-dbg(fivehundred_gen_stats)
-dbg(onethousand_gen_stats)
-
 genealogy = Utilities.Genealogy.get_tree()
-dbg(Graph.vertices(genealogy))
+{:ok, dot} = Graph.Serializers.DOT.serialize(genealogy)
+{:ok, dotfile} = File.open("tiger_simulation.dot", [:write])
+:ok = IO.binwrite(dotfile, dot)
+:ok = File.close(dotfile)
+
+stats =
+  :ets.tab2list(:statistics)
+  |> Enum.map(fn {generation, stats} -> [generation, stats.mean_fitness] end)
+
+{:ok, cmd} =
+  Gnuplot.plot(
+    [
+      [:set, :title, "Mean fitness vs generation"],
+      [:plot, "-", :with, :points]
+    ],
+    [stats]
+  )
